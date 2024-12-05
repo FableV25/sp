@@ -61,40 +61,45 @@
         }
     
         function renderProducts(products) {
-            const container = document.getElementById('product-container');
-            container.innerHTML = `
-                <table border="1">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Nombre</th>
-                            <th>Descripción</th>
-                            <th>Precio</th>
-                            <th>Marca</th>
-                            <th>Categoría</th>
-                            <th>Estado</th>
-                            <th>Acción</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${products.map(product => `
-                            <tr>
-                                <td>${product.idProducto}</td>
-                                <td>${product.NombreP}</td>
-                                <td>${product.Descripcion}</td>
-                                <td>${product.Precio}</td>
-                                <td>${product.Marca}</td>
-                                <td>${product.Categoria}</td>
-                                <td>${product.Estado}</td>
-                                <td>
-                                    <button onclick="addToCart('${product.NombreP}', ${product.Precio})">Añadir a la lista</button>
-                                </td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            `;
-        }
+    const container = document.getElementById('product-container');
+    container.innerHTML = `
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Descripción</th>
+                    <th>Precio</th>
+                    <th>Marca</th>
+                    <th>Categoría</th>
+                    <th>Estado</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${products.map(product => `
+                    <tr>
+                        <td>${product.idProducto}</td>
+                        <td>${product.NombreP}</td>
+                        <td>${product.Descripcion}</td>
+                        <td>${product.Precio}</td>
+                        <td>${product.Marca}</td>
+                        <td>${product.Categoria}</td>
+                        <td>${product.Estado}</td>
+                        <td>
+                            ${
+                                product.Estado.toLowerCase() === 'disponible'
+                                    ? `<button onclick="addToCart('${product.NombreP}', ${product.Precio})">Añadir a la lista</button>`
+                                    : `<span style="color: red;">No disponible</span>`
+                            }
+                        </td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
+}
+
     
         function addToCart(productName, productPrice) {
             cart.push({ productName, productPrice });
