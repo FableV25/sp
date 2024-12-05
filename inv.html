@@ -106,37 +106,73 @@
     }
 
     async function updateProduct() {
-        const id = document.getElementById('edit-id').value;
-        const updatedProduct = {
-            NombreP: document.getElementById('edit-name').value,
-            Descripcion: document.getElementById('edit-description').value,
-            Precio: parseFloat(document.getElementById('edit-price').value),
-            Marca: document.getElementById('edit-brand').value,
-            Categoria: document.getElementById('edit-category').value,
-            Estado: document.getElementById('edit-status').value.toLowerCase()
-        };
+    const id = document.getElementById('edit-id').value;
+    const name = document.getElementById('edit-name').value.trim();
+    const description = document.getElementById('edit-description').value.trim();
+    const priceInput = document.getElementById('edit-price');
+    const price = parseFloat(priceInput.value);
+    const brand = document.getElementById('edit-brand').value.trim();
+    const category = document.getElementById('edit-category').value.trim();
+    const status = document.getElementById('edit-status').value;
 
-        try {
-            const response = await fetch(`${apiUrl}/${id}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(updatedProduct)
-            });
-
-            if (response.ok) {
-                alert('Producto actualizado exitosamente');
-                closeModal(); // Cierra el modal después de la actualización
-                fetchProductos(); // Recarga los productos
-            } else {
-                alert('Error al actualizar el producto');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            alert('Ocurrió un error al actualizar el producto');
-        }
+    // Validaciones personalizadas
+    if (!name) {
+        alert('El campo "Nombre del Producto" no puede estar vacío.');
+        return;
     }
+    if (!description) {
+        alert('El campo "Descripción" no puede estar vacío.');
+        return;
+    }
+    if (isNaN(price) || price <= 0) {
+        priceInput.value = ""; // Limpia el campo para que el usuario corrija
+        alert('Por favor, ingrese un precio válido (número mayor a 0).');
+        return;
+    }
+    if (!brand) {
+        alert('El campo "Marca" no puede estar vacío.');
+        return;
+    }
+    if (!category) {
+        alert('El campo "Categoría" no puede estar vacío.');
+        return;
+    }
+    if (!status) {
+        alert('Por favor, seleccione un estado válido.');
+        return;
+    }
+
+    const updatedProduct = {
+        NombreP: name,
+        Descripcion: description,
+        Precio: price,
+        Marca: brand,
+        Categoria: category,
+        Estado: status.toLowerCase()
+    };
+
+    try {
+        const response = await fetch(`${apiUrl}/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(updatedProduct)
+        });
+
+        if (response.ok) {
+            alert('Producto actualizado exitosamente');
+            closeModal(); // Cierra el modal después de la actualización
+            fetchProductos(); // Recarga los productos
+        } else {
+            alert('Error al actualizar el producto');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Ocurrió un error al actualizar el producto');
+    }
+}
+
     async function addProductFromModal() {
     const name = document.getElementById('add-name').value.trim();
     const description = document.getElementById('add-description').value.trim();
