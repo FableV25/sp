@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GlamSys</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <header>
+        <img src="Logo.png" alt="Place holder del Logo de GlamSys">
+        <h1>GlamSys - Punto de venta</h1>
+
+        <div class="topnav">
+            <a class="active" href="/">Punto de venta</a>
+            <a href="/inv">Inventario</a>
+            <a href="/ventas">Ventas</a>
+          </div> 
+
+    </header>
+    
+    <main>
+        <h2>Lista de compras</h2>
+        <div id="cart" class="cart"></div>
+        <p>Total: $<span id="total">0</span></p>
+        <button onclick="checkout()">Finalizar compra</button>
+
+        <h2>Productos disponibles</h2>
+        <div id="product-container">
+            <!-- Product Table will be rendered here -->
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 GlamSys</p>
+    </footer>
+
+    <!-- Modal para el resumen de compra -->
+    <div id="checkout-modal" class="modalA" style="display: none;">
+        <div class="modal-content">
+            <h3>Resumen de Compra</h3>
+            <div id="checkout-summary"></div>
+            <p><strong>Total: $<span id="checkout-total">0</span></strong></p>
+            <button onclick="closeModal()">Cerrar</button>
+        </div>
+    </div>
+
+    <script>
+        const apiUrl = 'http://192.168.10.105:8080/Productos';
+        let cart = []; // Array para almacenar los productos del carrito
+    
+        async function fetchProductos() {
+            try {
+                const response = await fetch(apiUrl);
+                if (!response.ok) throw new Error("Error fetching products");
+                const products = await response.json();
+                renderProducts(products);
+            } catch (error) {
+                console.error("Error:", error);
+            }
+        }
+    
+        function renderProducts(products) {
+            const container = document.getElementById('product-container');
+            container.innerHTML = `
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Descripción</th>
+                            <th>Precio</th>
+                            <th>Marca</th>
+                            <th>Categoría</th>
+                            <th>Estado</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${products.map(product => `
+                            <tr>
+                                <td>${product.idProducto}</td>
+                                <td>${product.NombreP}</td>
+                                <td>${product.Descripcion}</td>
+                                <td>${product.Precio}</td>
+                                <td>${product.Marca}</td>
+                                <td>${product.Categoria}</td>
+                                <td>${product.Estado}</td>
+                                <td>
+                                    <button onclick="addToCart('${product.NombreP}', ${product.Precio})">Añadir a la lista</button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+    
+        function addToCart(productName, productPrice) {
+            cart.push({ productName, productPrice });
+            updateCartView();
+        }
+    
+        function updateCartView() {
+            const cartContainer = document.getElementById('cart');
+            const totalElement = document.getElementById('total');
+            cartContainer.innerHTML = cart.map((item, index) => `
+                <div>
+                    ${item.productName} - $${item.productPrice.toFixed(2)}
+                    <button onclick="removeFromCart(${index})">Eliminar</button>
+                </div>
+            `).join('');
+            const total = cart.reduce((sum, item) => sum + item.productPrice, 0);
+            totalElement.textContent = total.toFixed(2);
+        }
+    
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            updateCartView();
+        }
+    
+        async function checkout() {
+    if (cart.length === 0) {
+        alert("La lista está vacía. Agrega los productos antes de finalizar la compra.");
+        return;
+    }
+
+    const total = cart.reduce((sum, item) => sum + item.productPrice, 0);
+    const resumen = cart.map(item => `<p>${item.productName} - $${item.productPrice.toFixed(2)}</p>`).join('');
+    
+    // Actualiza el contenido del modal
+    document.getElementById('checkout-summary').innerHTML = resumen;
+    document.getElementById('checkout-total').textContent = total.toFixed(2);
+
+    // Muestra el modal
+    document.getElementById('checkout-modal').style.display = 'flex';
+
+    // Llamada a la API para incrementar las ventas de los productos
+    const nombresProductos = cart.map(item => item.productName); // Extraemos los nombres de los productos
+    try {
+        const response = await fetch('http://192.168.10.105:8080/Productos/IncrementarVentas', {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ nombresProductos }) // Enviamos los nombres de los productos
+        });
+
+        if (response.ok) {
+            const data = await response.text();
+            console.log(data); // Puedes mostrar una confirmación de que las ventas fueron actualizadas
+        } else {
+            console.error("Error al actualizar las ventas de los productos.");
+        }
+    } catch (error) {
+        console.error("Error al realizar la solicitud:", error);
+    }
+
+    // Vaciar el carrito después de finalizar la compra
+    cart = [];
+    updateCartView(); // Actualizamos la vista del carrito
+}
+
+
+
+        function closeModal() {
+            document.getElementById('checkout-modal').style.display = 'none';
+        }
+    
+        window.onload = fetchProductos;
+    </script>
+</body>
+</html>

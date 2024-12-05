@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GlamSys</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <header>
+        <img src="Logo.png" alt="Place holder del Logo de GlamSys">
+        <h1>GlamSys - Punto de venta</h1>
+
+        <div class="topnav">
+            <a class="active" href="/ventas">Ventas</a>
+            <a href="/">Punto de venta</a>
+            <a href="/inv">Inventario</a>
+        </div> 
+    </header>
+    
+    <main>
+        <div id="product-container">
+            <!-- Product Table will be rendered here -->
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 GlamSys</p>
+    </footer>
+
+    <script>
+        const apiUrl = 'http://192.168.10.105:8080/Productos';
+        async function fetchProductos() {   
+            try {
+                const response = await fetch(apiUrl);
+                if (!response.ok) throw new Error("Error fetching products");
+                const products = await response.json();
+                renderProducts(products);
+            } catch (error) {
+                console.error("Error:", error);
+            }
+        }
+
+        function renderProducts(products) {
+            const container = document.getElementById('product-container');
+            container.innerHTML = `
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Descripción</th>
+                            <th>Precio</th>
+                            <th>Marca</th>
+                            <th>Categoría</th>
+                            <th>Estado</th>
+                            <th>Vendidos</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${products.map(product => `
+                            <tr>
+                                <td>${product.idProducto}</td>
+                                <td>${product.NombreP}</td>
+                                <td>${product.Descripcion}</td>
+                                <td>${product.Precio}</td>
+                                <td>${product.Marca}</td>
+                                <td>${product.Categoria}</td>
+                                <td>${product.Estado}</td>
+                                <td>${product.vendidosp}</td>
+
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        window.onload = fetchProductos;
+    </script>
+</body>
+</html>

@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GlamSys</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <header>
+        <img src="Logo.png" alt="Place holder del Logo de GlamSys">
+        <h1>GlamSys - Inventario</h1>
+
+        <div class="topnav">
+            <a class="active" href="/inv">Inventario</a>
+            <a href="/">Punto de venta</a>
+            <a href="/ventas">Ventas</a>
+        </div> 
+    </header>
+    
+    <main>
+        <button onclick="openAddModal()">Añadir Producto</button>
+
+        <h2>Productos disponibles</h2>
+        <div id="product-container">
+            <!-- Product Table will be rendered here -->
+        </div>
+    </main>
+
+    <footer>    
+        <p>&copy; 2024 GlamSys</p>
+    </footer>
+
+    <!-- Modal para agregar productos -->
+    <div id="add-modal" class="modalA" style="display: none;">
+        <div class="modal-content">
+            <h3>Agregar Producto</h3>
+            <form id="add-form">
+                <input type="text" id="add-name" placeholder="Nombre del Producto" required>
+                <input type="text" id="add-description" placeholder="Descripción" required>
+                <input type="number" id="add-price" placeholder="Precio" step="0.01" required>
+                <input type="text" id="add-brand" placeholder="Marca" required>
+                <input type="text" id="add-category" placeholder="Categoría" required>
+                <select id="add-status" required>
+                    <option value="disponible">Disponible</option>
+                    <option value="no disponible">No Disponible</option>
+                </select>
+                <button type="button" onclick="addProductFromModal()">Agregar Producto</button>
+                <button type="button" onclick="closeModal()">Cancelar</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal para editar productos -->
+    <div id="edit-modal" class="modalA" style="display: none;">
+        <div class="modal-content">
+            <h3>Editar Producto</h3>
+            <form id="edit-form">
+                <input type="hidden" id="edit-id">
+                <input type="text" id="edit-name" placeholder="Nombre del Producto">
+                <input type="text" id="edit-description" placeholder="Descripción">
+                <input type="number" id="edit-price" placeholder="Precio" step="0.01">
+                <input type="text" id="edit-brand" placeholder="Marca">
+                <input type="text" id="edit-category" placeholder="Categoría">
+                <select id="edit-status">
+                    <option value="disponible">Disponible</option>
+                    <option value="no disponible">No Disponible</option>
+                </select>
+                <button type="button" onclick="updateProduct()">Guardar Cambios</button>
+                <button type="button" onclick="closeModal()">Cancelar</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const apiUrl = 'http://192.168.10.105:8080/Productos';
+
+        function openAddModal() {
+        document.getElementById('add-modal').style.display = 'flex';
+    }
+
+    function openModal(id, name, description, price, brand, category, status) {
+        // Configura el modal de edición
+        document.getElementById('edit-id').value = id;
+        document.getElementById('edit-name').value = name;
+        document.getElementById('edit-description').value = description;
+        document.getElementById('edit-price').value = price;
+        document.getElementById('edit-brand').value = brand;
+        document.getElementById('edit-category').value = category;
+        document.getElementById('edit-status').value = status.toLowerCase();
+        
+        // Abre el modal de edición
+        document.getElementById('edit-modal').style.display = 'flex';
+    }
+
+    function closeModal() {
+        // Cierra ambos modales si están abiertos
+        const addModal = document.getElementById('add-modal');
+        const editModal = document.getElementById('edit-modal');
+        if (addModal.style.display === 'flex') {
+            addModal.style.display = 'none';
+        }
+        if (editModal.style.display === 'flex') {
+            editModal.style.display = 'none';
+        }
+    }
+
+    async function updateProduct() {
+        const id = document.getElementById('edit-id').value;
+        const updatedProduct = {
+            NombreP: document.getElementById('edit-name').value,
+            Descripcion: document.getElementById('edit-description').value,
+            Precio: parseFloat(document.getElementById('edit-price').value),
+            Marca: document.getElementById('edit-brand').value,
+            Categoria: document.getElementById('edit-category').value,
+            Estado: document.getElementById('edit-status').value.toLowerCase()
+        };
+
+        try {
+            const response = await fetch(`${apiUrl}/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(updatedProduct)
+            });
+
+            if (response.ok) {
+                alert('Producto actualizado exitosamente');
+                closeModal(); // Cierra el modal después de la actualización
+                fetchProductos(); // Recarga los productos
+            } else {
+                alert('Error al actualizar el producto');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Ocurrió un error al actualizar el producto');
+        }
+    }
+        async function addProductFromModal() {
+            const name = document.getElementById('add-name').value;
+            const description = document.getElementById('add-description').value;
+            const price = parseFloat(document.getElementById('add-price').value);
+            const brand = document.getElementById('add-brand').value;
+            const category = document.getElementById('add-category').value;
+            const status = document.getElementById('add-status').value;
+
+            if (!name || !description || isNaN(price) || price <= 0 || !brand || !category || !status) {
+                alert('Por favor, complete todos los campos correctamente.');
+                return;
+            }
+
+            const newProduct = {
+                NombreP: name,
+                Descripcion: description,
+                Precio: price,
+                Marca: brand,
+                Categoria: category,
+                Estado: status.toLowerCase()
+            };
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(newProduct)
+                });
+
+                if (response.ok) {
+                    alert('Producto registrado exitosamente');
+                    closeModal();
+                    fetchProductos();
+                } else {
+                    alert('Error al registrar el producto');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Ocurrió un error al registrar el producto');
+            }
+        }
+
+        async function fetchProductos() {
+            try {
+                const response = await fetch(apiUrl);
+                if (!response.ok) throw new Error("Error fetching products");
+                const products = await response.json();
+                renderProducts(products);
+            } catch (error) {
+                console.error("Error:", error);
+            }
+        }
+
+        async function deleteProduct(id) {
+    try {
+        const response = await fetch(`${apiUrl}/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.ok) {
+            alert('Producto eliminado exitosamente');
+            fetchProductos(); // Recarga los productos después de eliminar
+        } else {
+            alert('Error al eliminar el producto');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Ocurrió un error al eliminar el producto');
+    }
+}
+
+
+        function renderProducts(products) {
+            const container = document.getElementById('product-container');
+            container.innerHTML = `
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Descripción</th>
+                            <th>Precio</th>
+                            <th>Marca</th>
+                            <th>Categoría</th>
+                            <th>Estado</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${products.map(product => `
+                            <tr>
+                                <td>${product.idProducto}</td>
+                                <td>${product.NombreP}</td>
+                                <td>${product.Descripcion}</td>
+                                <td>${product.Precio}</td>
+                                <td>${product.Marca}</td>
+                                <td>${product.Categoria}</td>
+                                <td>${product.Estado}</td>
+                                <td>
+                                    <button onclick="openModal(${product.idProducto}, '${product.NombreP}', '${product.Descripcion}', ${product.Precio}, '${product.Marca}', '${product.Categoria}', '${product.Estado}')">Actualizar</button>
+                                    <button onclick="deleteProduct(${product.idProducto})">Eliminar</button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        window.onload = fetchProductos;
+    </script>
+</body>
+</html>
