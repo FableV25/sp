@@ -46,7 +46,7 @@
     </div>
 
     <script>
-        const apiUrl = 'http://192.168.10.105:8080/Productos';
+        const apiUrl = 'https://sp-a29s.onrender.com/Productos';
         let cart = []; // Array para almacenar los productos del carrito
     
         async function fetchProductos() {
@@ -138,7 +138,7 @@
     // Llamada a la API para incrementar las ventas de los productos
     const nombresProductos = cart.map(item => item.productName); // Extraemos los nombres de los productos
     try {
-        const response = await fetch('http://192.168.10.105:8080/Productos/IncrementarVentas', {
+        const response = await fetch('https://sp-a29s.onrender.com/Productos/IncrementarVentas', {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json'
