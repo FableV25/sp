@@ -137,49 +137,73 @@
             alert('Ocurrió un error al actualizar el producto');
         }
     }
-        async function addProductFromModal() {
-            const name = document.getElementById('add-name').value;
-            const description = document.getElementById('add-description').value;
-            const price = parseFloat(document.getElementById('add-price').value);
-            const brand = document.getElementById('add-brand').value;
-            const category = document.getElementById('add-category').value;
-            const status = document.getElementById('add-status').value;
+    async function addProductFromModal() {
+    const name = document.getElementById('add-name').value.trim();
+    const description = document.getElementById('add-description').value.trim();
+    const priceInput = document.getElementById('add-price');
+    const price = parseFloat(priceInput.value);
+    const brand = document.getElementById('add-brand').value.trim();
+    const category = document.getElementById('add-category').value.trim();
+    const status = document.getElementById('add-status').value;
 
-            if (!name || !description || isNaN(price) || price <= 0 || !brand || !category || !status) {
-                alert('Por favor, complete todos los campos correctamente.');
-                return;
-            }
+    // Validaciones personalizadas
+    if (!name) {
+        alert('El campo "Nombre del Producto" no puede estar vacío.');
+        return;
+    }
+    if (!description) {
+        alert('El campo "Descripción" no puede estar vacío.');
+        return;
+    }
+    if (isNaN(price) || price <= 0) {
+        priceInput.value = ""; // Limpia el campo para que el usuario corrija
+        alert('Por favor, ingrese un precio válido (número mayor a 0).');
+        return;
+    }
+    if (!brand) {
+        alert('El campo "Marca" no puede estar vacío.');
+        return;
+    }
+    if (!category) {
+        alert('El campo "Categoría" no puede estar vacío.');
+        return;
+    }
+    if (!status) {
+        alert('Por favor, seleccione un estado válido.');
+        return;
+    }
 
-            const newProduct = {
-                NombreP: name,
-                Descripcion: description,
-                Precio: price,
-                Marca: brand,
-                Categoria: category,
-                Estado: status.toLowerCase()
-            };
+    const newProduct = {
+        NombreP: name,
+        Descripcion: description,
+        Precio: price,
+        Marca: brand,
+        Categoria: category,
+        Estado: status.toLowerCase()
+    };
 
-            try {
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(newProduct)
-                });
+    try {
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(newProduct)
+        });
 
-                if (response.ok) {
-                    alert('Producto registrado exitosamente');
-                    closeModal();
-                    fetchProductos();
-                } else {
-                    alert('Error al registrar el producto');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                alert('Ocurrió un error al registrar el producto');
-            }
+        if (response.ok) {
+            alert('Producto registrado exitosamente');
+            closeModal();
+            fetchProductos();
+        } else {
+            alert('Error al registrar el producto');
         }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Ocurrió un error al registrar el producto');
+    }
+}
+
 
         async function fetchProductos() {
             try {
@@ -223,7 +247,7 @@
                             <th>ID</th>
                             <th>Nombre</th>
                             <th>Descripción</th>
-                            <th>Precio</th>
+                            <th>Precio (Número)</th>
                             <th>Marca</th>
                             <th>Categoría</th>
                             <th>Estado</th>
